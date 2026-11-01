@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athar AI | أثر - المنصة الأكاديمية الذكية</title>
+<style>
+:root{--bg:#0b1329;--card:#1e293b;--card-inner:#0f172a;--text:#f8fafc;--text-sub:#94a3b8;--border:rgba(226,232,240,0.12);--accent:#38bdf8;--purple:#a855f7;--shadow:0 12px 30px rgba(0,0,0,0.35)}
+body.light-mode{--bg:#f1f5f9;--card:#ffffff;--card-inner:#e2e8f0;--text:#0f172a;--text-sub:#475569;--border:rgba(15,23,42,0.12);--shadow:0 8px 20px rgba(0,0,0,0.06)}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;padding-bottom:75px;transition:background 0.3s,color 0.3s}
+.screen{display:none;flex-direction:column;flex:1;width:100%}
+.screen.active{display:flex}
+
+#onboardingScreen{align-items:center;justify-content:center;padding:1.5rem}
+.onboarding-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:2.2rem 1.5rem;width:100%;max-width:420px;text-align:center;box-shadow:var(--shadow)}
+
+/* شعار المشروع الأكاديمي الفاخر المطابق للشعار المعتمد */
+.project-logo-badge{width:82px;height:82px;margin:0 auto 1.2rem;background:linear-gradient(135deg, #581c87, #7e22ce, #3b82f6);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 25px rgba(168,85,247,0.4), inset 0 2px 5px rgba(255,215,0,0.4);border:2px solid rgba(255,215,0,0.4);font-size:2.4rem;position:relative}
+.project-logo-badge::after{content:'🎓';position:absolute;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
+
+.app-title{font-size:2rem;background:linear-gradient(135deg,#38bdf8,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;margin-bottom:0.3rem}
+.app-subtitle{font-size:0.85rem;color:var(--text-sub);margin-bottom:1.5rem}
+
+.form-group{text-align:right;margin-bottom:1.2rem}
+.form-group label{display:block;font-size:0.85rem;font-weight:700;margin-bottom:0.4rem;color:var(--text)}
+.form-group input,.form-group select{width:100%;padding:0.9rem;border-radius:12px;border:1px solid var(--border);background:var(--card-inner);color:var(--text);outline:none;font-size:0.95rem}
+.btn-primary{width:100%;padding:1rem;background:linear-gradient(135deg,var(--accent),#6366f1);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(56,189,248,0.3)}
+
+header{background:var(--card);padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+.header-right{display:flex;align-items:center;gap:0.75rem}
+.header-title{font-size:1.3rem;font-weight:900;color:var(--accent)}
+.theme-toggle{background:var(--card-inner);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:10px;cursor:pointer;font-size:0.8rem;font-weight:700}
+
+.container{flex:1;max-width:850px;width:100%;margin:0 auto;padding:1.2rem;display:flex;flex-direction:column;gap:1.2rem}
+.hero-box{background:linear-gradient(135deg,rgba(56,189,248,0.15),rgba(168,85,247,0.15));border:1px solid var(--border);padding:1.4rem;border-radius:20px;text-align:center}
+.hero-box h2{font-size:1.3rem;margin-bottom:0.4rem;color:var(--accent)}
+.hero-box p{font-size:0.85rem;color:var(--text-sub);line-height:1.5}
+
+.grid-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.2rem;display:flex;flex-direction:column;gap:0.4rem;cursor:pointer;box-shadow:var(--shadow)}
+.card-icon{font-size:1.8rem;margin-bottom:0.2rem}
+.card h3{font-size:0.95rem;color:var(--text)}
+.card p{font-size:0.75rem;color:var(--text-sub);line-height:1.4}
+
+.chat-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1rem;overflow-y:auto;max-height:52vh;display:flex;flex-direction:column;gap:1rem}
+.msg{padding:0.9rem 1.1rem;border-radius:14px;max-width:85%;line-height:1.6;font-size:0.9rem;word-break:break-word}
+.user-msg{background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;align-self:flex-start;border-bottom-right-radius:2px}
+.ai-msg{background:var(--card-inner);color:var(--text);align-self:flex-end;border:1px solid var(--border);border-bottom-left-radius:2px}
+.input-dock{display:flex;gap:0.6rem;background:var(--card);padding:0.6rem;border-radius:16px;border:1px solid var(--border)}
+.input-dock input{flex:1;padding:0.8rem;background:transparent;border:none;outline:none;font-size:0.95rem;color:var(--text)}
+.send-btn{padding:0.8rem 1.4rem;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer}
+
+nav.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:0.6rem 0;z-index:100}
+.nav-item{background:transparent;border:none;display:flex;flex-direction:column;align-items:center;gap:0.2rem;color:var(--text-sub);font-size:0.75rem;cursor:pointer;font-weight:700}
+.nav-item.active{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="onboardingScreen">
+<div class="onboarding-card">
+<!-- الشعار المعتمد بتصميم ثلاثي الأبعاد فاخر يطابق الشعار الذهبي والبنفسجي -->
+<div class="project-logo-badge"></div>
+<h1 class="app-title">Athar AI</h1>
+<p class="app-subtitle">البوابة المعرفية المتقدمة لطلاب مرحلة الثانوية</p>
+<div class="form-group">
+<label>اسم الطالب المسجل</label>
+<input type="text" id="studentNameInput" placeholder="أدخل اسمك الثلاثي...">
+</div>
+<div class="form-group">
+<label>المستوى الدراسي</label>
+<select id="gradeInput">
+<option value="الصف الثالث الثانوي">الصف الثالث الثانوي (التوجيهي)</option>
+<option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+<option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+</select>
+</div>
+<button class="btn-primary" onclick="startApp()">انطلاق المنصة 🚀</button>
+</div>
+</div>
+
+<div class="screen" id="homeScreen">
+<header>
+<div class="header-right">
+<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#581c87,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid rgba(255,215,0,0.3);">🎓</div>
+<div>
+<div class="header-title">Athar AI</div>
+<p style="font-size:0.75rem;color:var(--text-sub);" id="welcomeUserText">مرحباً بك</p>
+</div>
+</div>
+<button class="theme-toggle" onclick="toggleTheme()">🌗 المظهر</button>
+</header>
+<div class="container">
+<div class="hero-box">
+<h2>بيئة التعلم التكيفي الذكي</h2>
+<p>مساعدك الشامل لتبسيط المفاهيم المعقدة، تحليل المناهج، وصياغة التقييمات الذاتية الدقيقة.</p>
+</div>
+<div class="grid-cards">
+<div class="card" onclick="openTask('مستكشف المفاهيم')">
+<span class="card-icon">🧠</span>
+<h3>مستكشف المفاهيم</h3>
+<p>تفاصيل دقيقة وشرح تفاعلي متدرج لكل المناهج</p>
+</div>
+<div class="card" onclick="openTask('المحاور الأكاديمي')">
+<span class="card-icon">⚡</span>
+<h3>المحاور الأكاديمي</h3>
+<p>جلسة حوارية مخصصة للرد على كافة التساؤلات</p>
+</div>
+<div class="card" onclick="openTask('مولد التقييمات')">
+<span class="card-icon">🎯</span>
+<h3>مولد التقييمات</h3>
+<p>نماذج اختبارات ذكية لقياس الاستيعاب بدقة</p>
+</div>
+<div class="card" onclick="openTask('مستشار التلخيص')">
+<span class="card-icon">📚</span>
+<h3>مستشار التلخيص</h3>
+<p>تكثيف المحتوى العلمي في نقاط جوهرية مركزة</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="screen" id="chatScreen">
+<header>
+<div class="header-right">
+<div class="header-title" id="chatHeaderTitle">المحاور الأكاديمي</div>
+</div>
+<button class="theme-toggle" onclick="toggleTheme()">🌗 المظهر</button>
+</header>
+<div class="container">
+<div class="chat-box" id="chatBox">
+<div class="msg ai-msg">أهلاً بك! نظام **Athar AI** مستعد لمعالجة طلبك الأكاديمي. اكتب استفسارك أو وحدتك الدراسية بالأسفل.</div>
+</div>
+<div class="input-dock">
+<input type="text" id="userInput" placeholder="اكتب سؤالك الأكاديمي هنا...">
+<button class="send-btn" onclick="handleSend()">تحليل ⚡</button>
+</div>
+</div>
+</div>
+
+<div class="screen" id="profileScreen">
+<header>
+<div class="header-title">السجل الأكاديمي</div>
+<button class="theme-toggle" onclick="toggleTheme()">🌗 المظهر</button>
+</header>
+<div class="container">
+<div class="onboarding-card" style="max-width:100%;text-align:right;">
+<h3 style="color:var(--accent);margin-bottom:1rem;">بيانات الجلسة الحالية:</h3>
+<p id="profileDetails" style="margin-bottom:1.5rem;line-height:1.8;color:var(--text-sub);"></p>
+<button class="btn-primary" onclick="logout()" style="background:#ef4444;">إعادة ضبط الحساب</button>
+</div>
+</div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" style="display:none;">
+<button class="nav-item active" onclick="switchTab('homeScreen',this)"><span>🏠</span>الرئيسية</button>
+<button class="nav-item" onclick="openTask('مستشار التلخيص');switchTab('chatScreen',this)"><span>📚</span>التلخيص</button>
+<button class="nav-item" onclick="openTask('مولد التقييمات');switchTab('chatScreen',this)"><span>🎯</span>التقييم</button>
+<button class="nav-item" onclick="switchTab('profileScreen',this)"><span>⚙️</span>حسابي</button>
+</nav>
+
+<script>
+let studentName=localStorage.getItem("athar_student_name")||"";
+let studentGrade=localStorage.getItem("athar_student_grade")||"";
+let currentTask="مستكشف المفاهيم";
+
+const initApp=()=>(
+studentName?(
+document.getElementById("onboardingScreen").classList.remove("active"),
+document.getElementById("homeSchool")?.classList.add("active"),
+document.getElementById("homeScreen").classList.add("active"),
+document.getElementById("bottomNav").style.display="flex",
+document.getElementById("welcomeUserText").innerText=`مرحباً بك يا ${studentName} (${studentGrade})`,
+document.getElementById("profileDetails").innerHTML=`<b>اسم الطالب:</b> ${studentName}<br><b>المرحلة:</b> ${studentGrade}<br><b>حالة النظام:</b> متصل بالوسيط البرمجي الآمن`
+):null
+);
+
+const startApp=()=>{
+const name=document.getElementById("studentNameInput").value.trim();
+const grade=document.getElementById("gradeInput").value;
+name===""?alert("يرجى تدوين اسم الطالب أولاً!"):(
+localStorage.setItem("athar_student_name",name),
+localStorage.setItem("athar_student_grade",grade),
+studentName=name,studentGrade=grade,initApp()
+);
+};
+
+const switchTab=(screenId,btn)=>(
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')),
+document.getElementById(screenId).classList.add('active'),
+document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')),
+btn?btn.classList.add('active'):null
+);
+
+const openTask=(taskName)=>(
+currentTask=taskName,
+document.getElementById("chatHeaderTitle").innerText=taskName,
+switchTab('chatScreen')
+);
+
+const toggleTheme=()=>document.body.classList.toggle("light-mode");
+
+const appendMsg=(text,sender)=>(
+document.getElementById("chatBox").innerHTML+=`<div class="msg ${sender===1?'user-msg':'ai-msg'}">${text}</div>`,
+document.getElementById("chatBox").scrollTop=document.getElementById("chatBox"].scrollHeight
+);
+
+const handleSend=()=>{
+const input=document.getElementById("userInput");
+const txt=input.value.trim();
+txt===""?null:(
+appendMsg(txt,1),input.value="",callProxy(currentTask,txt)
+);
+};
+
+const callProxy=async(task,query)=>(
+appendMsg("جاري تحليل البيانات عبر محرك Athar AI...",2),
+fetch('/api/ask',{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({subject:"عام",task,query,grade:studentGrade,statusName:studentName})
+})
+.then(r=>r.json())
+.then(d=>(document.getElementById("chatBox").lastChild.remove(),appendMsg(d.reply||d.error,2)))
+.catch(()=>(document.getElementById("chatBox").lastChild.remove(),appendMsg("تعذر الاتصال بالخادم الوسيط.",2)))
+);
+
+const logout=()=>(localStorage.clear(),location.reload());
+
+initApp();
+</script>
+</body>
+</html>

@@ -3,246 +3,433 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Athar AI | أثر - المنصة الأكاديمية الذكية</title>
+<title>أثر AI — مساعدك الدراسي الذكي</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1329;--card:#1e293b;--card-inner:#0f172a;--text:#f8fafc;--text-sub:#94a3b8;--border:rgba(226,232,240,0.12);--accent:#38bdf8;--purple:#a855f7;--shadow:0 12px 30px rgba(0,0,0,0.35)}
-body.light-mode{--bg:#f1f5f9;--card:#ffffff;--card-inner:#e2e8f0;--text:#0f172a;--text-sub:#475569;--border:rgba(15,23,42,0.12);--shadow:0 8px 20px rgba(0,0,0,0.06)}
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
-body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;padding-bottom:75px;transition:background 0.3s,color 0.3s}
-.screen{display:none;flex-direction:column;flex:1;width:100%}
-.screen.active{display:flex}
-
-#onboardingScreen{align-items:center;justify-content:center;padding:1.5rem}
-.onboarding-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:2.2rem 1.5rem;width:100%;max-width:420px;text-align:center;box-shadow:var(--shadow)}
-
-.project-logo-badge{width:82px;height:82px;margin:0 auto 1.2rem;background:linear-gradient(135deg, #581c87, #7e22ce, #3b82f6);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 25px rgba(168,85,247,0.4), inset 0 2px 5px rgba(255,215,0,0.4);border:2px solid rgba(255,215,0,0.4);font-size:2.4rem;position:relative}
-.project-logo-badge::after{content:'🎓';position:absolute;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
-
-.app-title{font-size:2rem;background:linear-gradient(135deg,#38bdf8,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;margin-bottom:0.3rem}
-.app-subtitle{font-size:0.85rem;color:var(--text-sub);margin-bottom:1.5rem}
-
-.form-group{text-align:right;margin-bottom:1.2rem}
-.form-group label{display:block;font-size:0.85rem;font-weight:700;margin-bottom:0.4rem;color:var(--text)}
-.form-group input,.form-group select{width:100%;padding:0.9rem;border-radius:12px;border:1px solid var(--border);background:var(--card-inner);color:var(--text);outline:none;font-size:0.95rem}
-.btn-primary{width:100%;padding:1rem;background:linear-gradient(135deg,var(--accent),#6366f1);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(56,189,248,0.3)}
-
-header{background:var(--card);padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
-.header-right{display:flex;align-items:center;gap:0.75rem}
-.header-title{font-size:1.3rem;font-weight:900;color:var(--accent)}
-.theme-toggle{background:var(--card-inner);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:10px;cursor:pointer;font-size:0.8rem;font-weight:700}
-
-.container{flex:1;max-width:850px;width:100%;margin:0 auto;padding:1.2rem;display:flex;flex-direction:column;gap:1.2rem}
-.hero-box{background:linear-gradient(135deg,rgba(56,189,248,0.15),rgba(168,85,247,0.15));border:1px solid var(--border);padding:1.4rem;border-radius:20px;text-align:center}
-.hero-box h2{font-size:1.3rem;margin-bottom:0.4rem;color:var(--accent)}
-.hero-box p{font-size:0.85rem;color:var(--text-sub);line-height:1.5}
-
-.grid-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.2rem;display:flex;flex-direction:column;gap:0.4rem;cursor:pointer;box-shadow:var(--shadow)}
-.card-icon{font-size:1.8rem;margin-bottom:0.2rem}
-.card h3{font-size:0.95rem;color:var(--text)}
-.card p{font-size:0.75rem;color:var(--text-sub);line-height:1.4}
-
-.chat-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1rem;overflow-y:auto;max-height:52vh;display:flex;flex-direction:column;gap:1rem}
-.msg{padding:0.9rem 1.1rem;border-radius:14px;max-width:85%;line-height:1.6;font-size:0.9rem;word-break:break-word}
-.user-msg{background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;align-self:flex-start;border-bottom-right-radius:2px}
-.ai-msg{background:var(--card-inner);color:var(--text);align-self:flex-end;border:1px solid var(--border);border-bottom-left-radius:2px}
-.input-dock{display:flex;gap:0.6rem;background:var(--card);padding:0.6rem;border-radius:16px;border:1px solid var(--border)}
-.input-dock input{flex:1;padding:0.8rem;background:transparent;border:none;outline:none;font-size:0.95rem;color:var(--text)}
-.send-btn{padding:0.8rem 1.4rem;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer}
-
-nav.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:0.6rem 0;z-index:100}
-.nav-item{background:transparent;border:none;display:flex;flex-direction:column;align-items:center;gap:0.2rem;color:var(--text-sub);font-size:0.75rem;cursor:pointer;font-weight:700}
-.nav-item.active{color:var(--accent)}
+  * { font-family: 'Cairo', sans-serif; }
+  body { background: linear-gradient(135deg, #eef2ff 0%, #f0fdfa 50%, #ecfeff 100%); min-height: 100vh; }
+  .screen { animation: fadeIn .35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .subject-card { transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; }
+  .subject-card:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 30px rgba(79,70,229,.18); }
+  .mode-tab.active { background: linear-gradient(90deg, #4f46e5, #0d9488); color: #fff; }
+  .spinner { width: 44px; height: 44px; border: 4px solid #e0e7ff; border-top-color: #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .quiz-option { transition: all .2s ease; }
+  .quiz-option:not(.locked):hover { border-color: #4f46e5; background: #eef2ff; }
+  .quiz-option.correct { background: #d1fae5 !important; border-color: #10b981 !important; }
+  .quiz-option.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; }
+  .rich-content strong { color: #4f46e5; }
+  .rich-content h3, .rich-content h4 { font-weight: 800; color: #1e1b4b; margin-top: .75rem; }
+  ::selection { background: #c7d2fe; }
 </style>
 </head>
-<body>
+<body class="text-slate-800">
 
-<div class="screen active" id="onboardingScreen">
-<div class="onboarding-card">
-<div class="project-logo-badge"></div>
-<h1 class="app-title">Athar AI</h1>
-<p class="app-subtitle">البوابة المعرفية المتقدمة لطلاب مرحلة الثانوية</p>
-<div class="form-group">
-<label>اسم الطالب المسجل</label>
-<input type="text" id="studentNameInput" placeholder="أدخل اسمك الثلاثي...">
-</div>
-<div class="form-group">
-<label>المستوى الدراسي</label>
-<select id="gradeInput">
-<option value="الصف الثالث الثانوي">الصف الثالث الثانوي (التوجيهي)</option>
-<option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-<option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-</select>
-</div>
-<button class="btn-primary" onclick="startApp()">انطلاق المنصة 🚀</button>
-</div>
+<div class="max-w-2xl mx-auto px-4 py-6">
+
+  <!-- ═══════════ الشاشة 1: الدخول ═══════════ -->
+  <section id="screen-login" class="screen">
+    <div class="text-center mt-10 mb-8">
+      <div class="text-6xl mb-3">🎓</div>
+      <h1 class="text-4xl font-extrabold bg-gradient-to-l from-indigo-600 to-teal-500 bg-clip-text text-transparent">أثر AI</h1>
+      <p class="text-slate-500 mt-2">مساعدك الدراسي الذكي لطلاب الثانوية</p>
+    </div>
+    <div class="bg-white rounded-3xl shadow-xl p-8">
+      <label class="block font-bold mb-2">👤 اسمك</label>
+      <input id="inp-name" type="text" maxlength="40" placeholder="اكتب اسمك هنا"
+        class="w-full border-2 border-indigo-100 rounded-xl px-4 py-3 mb-5 focus:border-indigo-500 outline-none">
+      <label class="block font-bold mb-2">🏫 صفك الدراسي</label>
+      <select id="inp-grade"
+        class="w-full border-2 border-indigo-100 rounded-xl px-4 py-3 mb-6 focus:border-indigo-500 outline-none bg-white">
+        <option>الأول الثانوي</option>
+        <option>الثاني الثانوي</option>
+        <option selected>الثالث الثانوي</option>
+      </select>
+      <button onclick="login()"
+        class="w-full py-3.5 rounded-xl text-white font-extrabold text-lg bg-gradient-to-l from-indigo-600 to-teal-500 hover:opacity-90 transition shadow-lg">ابدأ الرحلة 🚀</button>
+      <p class="text-xs text-slate-400 text-center mt-4">اسمك يُحفظ على جهازك فقط، ولا يُرسل إلى أي خادم.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════ الشاشة 2: الرئيسية / المواد ═══════════ -->
+  <section id="screen-home" class="screen hidden">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-extrabold" id="home-greeting">أهلاً 👋</h2>
+        <p class="text-slate-500 text-sm" id="home-grade"></p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="showScreen('screen-history')" class="bg-white shadow rounded-xl px-3 py-2 text-sm hover:bg-indigo-50">📚 سجلي</button>
+        <button onclick="showAbout()" class="bg-white shadow rounded-xl px-3 py-2 text-sm hover:bg-indigo-50">ℹ️</button>
+        <button onclick="logout()" class="bg-white shadow rounded-xl px-3 py-2 text-sm hover:bg-red-50">🚪</button>
+      </div>
+    </div>
+    <h3 class="font-extrabold text-lg mb-3">📖 اختر المادة</h3>
+    <div id="subjects-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+  </section>
+
+  <!-- ═══════════ الشاشة 3: المساعد ═══════════ -->
+  <section id="screen-assist" class="screen hidden">
+    <div class="flex items-center gap-3 mb-4">
+      <button onclick="showScreen('screen-home')" class="bg-white shadow rounded-xl px-3 py-2 hover:bg-indigo-50">→</button>
+      <h2 class="text-xl font-extrabold" id="assist-subject-title">المادة</h2>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-4" id="mode-tabs">
+      <button data-mode="explain" class="mode-tab active px-4 py-2 rounded-xl bg-white shadow text-sm font-bold">📖 شرح</button>
+      <button data-mode="summarize" class="mode-tab px-4 py-2 rounded-xl bg-white shadow text-sm font-bold">📝 تلخيص</button>
+      <button data-mode="quiz" class="mode-tab px-4 py-2 rounded-xl bg-white shadow text-sm font-bold">❓ اختبار قصير</button>
+      <button data-mode="chat" class="mode-tab px-4 py-2 rounded-xl bg-white shadow text-sm font-bold">💬 سؤال حر</button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
+      <textarea id="inp-text" rows="4" maxlength="8000"
+        placeholder="اكتب اسم الدرس أو السؤال هنا..."
+        class="w-full border-2 border-indigo-100 rounded-xl px-4 py-3 focus:border-indigo-500 outline-none resize-y"></textarea>
+      <div class="flex items-center justify-between mt-3">
+        <span class="text-xs text-slate-400" id="char-count">0 / 8000</span>
+        <button id="btn-send" onclick="sendRequest()"
+          class="px-6 py-2.5 rounded-xl text-white font-extrabold bg-gradient-to-l from-indigo-600 to-teal-500 hover:opacity-90 transition disabled:opacity-40 shadow"
+          >أرسل ➤</button>
+      </div>
+    </div>
+
+    <div id="result-area" class="hidden bg-white rounded-2xl shadow-lg p-6 mb-4">
+      <div id="result-content" class="rich-content leading-loose"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ الشاشة 4: الاختبار التفاعلي ═══════════ -->
+  <section id="screen-quiz" class="screen hidden">
+    <div class="flex items-center gap-3 mb-4">
+      <button onclick="showScreen('screen-assist')" class="bg-white shadow rounded-xl px-3 py-2 hover:bg-indigo-50">→</button>
+      <h2 class="text-xl font-extrabold">❓ الاختبار التفاعلي</h2>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+      <div class="flex justify-between text-sm text-slate-500 mb-2">
+        <span id="quiz-progress"></span>
+        <span id="quiz-score"></span>
+      </div>
+      <div class="w-full bg-indigo-100 rounded-full h-2 mb-5">
+        <div id="quiz-bar" class="bg-gradient-to-l from-indigo-600 to-teal-500 h-2 rounded-full transition-all duration-500" style="width:0%"></div>
+      </div>
+      <div id="quiz-body"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ الشاشة 5: السجل ═══════════ -->
+  <section id="screen-history" class="screen hidden">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <button onclick="showScreen('screen-home')" class="bg-white shadow rounded-xl px-3 py-2 hover:bg-indigo-50">→</button>
+        <h2 class="text-xl font-extrabold">📚 سجل المذاكرة</h2>
+      </div>
+      <button onclick="clearHistory()" class="text-xs text-red-500 hover:underline">مسح الكل</button>
+    </div>
+    <div id="history-list" class="space-y-3"></div>
+  </section>
+
+  <footer class="text-center text-xs text-slate-400 mt-10 pb-6">
+    أثر AI • مشروع تخرج • يعمل عبر الاتصال بالإنترنت
+  </footer>
 </div>
 
-<div class="screen" id="homeScreen">
-<header>
-<div class="header-right">
-<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#581c87,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid rgba(255,215,0,0.3);">🎓</div>
-<div>
-<div class="header-title">Athar AI</div>
-<p style="font-size:0.75rem;color:var(--text-sub);" id="welcomeUserText">مرحباً بك</p>
-</div>
-</div>
-<button class="theme-toggle" onclick="toggleTheme()">🌗 المظهر</button>
-</header>
-<div class="container">
-<div class="hero-box">
-<h2>بيئة التعلم التكيفي الذكي</h2>
-<p>مساعدك الشامل لتبسيط المفاهيم المعقدة، تحليل المناهج، وصياغة التقييمات الذاتية الدقيقة.</p>
-</div>
-<div class="grid-cards">
-<div class="card" onclick="openTask('مستكشف المفاهيم')">
-<span class="card-icon">🧠</span>
-<h3>مستكشف المفاهيم</h3>
-<p>تفاصيل دقيقة وشرح تفاعلي متدرج لكل المناهج</p>
-</div>
-<div class="card" onclick="openTask('المحاور الأكاديمي')">
-<span class="card-icon">⚡</span>
-<h3>المحاور الأكاديمي</h3>
-<p>جلسة حوارية مخصصة للرد على كافة التساؤلات</p>
-</div>
-<div class="card" onclick="openTask('مولد التقييمات')">
-<span class="card-icon">🎯</span>
-<h3>مولد التقييمات</h3>
-<p>نماذج اختبارات ذكية لقياس الاستيعاب بدقة</p>
-</div>
-<div class="card" onclick="openTask('مستشار التلخيص')">
-<span class="card-icon">📚</span>
-<h3>مستشار التلخيص</h3>
-<p>تكثيف المحتوى العلمي في نقاط جوهرية مركزة</p>
-</div>
-</div>
-</div>
+<!-- نافذة التحميل -->
+<div id="loader" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+  <div class="bg-white rounded-3xl p-8 text-center shadow-2xl mx-4">
+    <div class="spinner mx-auto mb-4"></div>
+    <p class="font-bold text-lg">⏳ يفكر أثر AI...</p>
+    <p class="text-xs text-slate-400 mt-1" id="loader-msg">قد يستغرق هذا حتى 30 ثانية</p>
+    <button onclick="cancelRequest()" class="mt-4 text-sm text-red-500 hover:underline">إلغاء</button>
+  </div>
 </div>
 
-<div class="screen" id="chatScreen">
-<header>
-<div class="header-right">
-<div class="header-title" id="chatHeaderTitle">المحاور الأكاديمي</div>
+<!-- نافذة حول المشروع -->
+<div id="about-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[85vh] overflow-y-auto">
+    <h3 class="font-extrabold text-lg mb-3 text-indigo-700">ℹ️ حول أثر AI</h3>
+    <div class="text-sm leading-relaxed space-y-2 text-slate-700">
+      <p><strong>المشكلة:</strong> يحتاج طلاب الثانوية لمساعد دراسي فوري يشرح ويلخص ويختبرهم في أي وقت.</p>
+      <p><strong>الحل:</strong> منصة ويب ذكية متعددة المستخدمين مبنية على نماذج لغوية حديثة، بواجهة عربية بسيطة.</p>
+      <p><strong>المعمارية:</strong> واجهة (HTML/Tailwind) ← وسيط أمني يخفي مفتاح الـ API ويحمي الحصة ← نموذج Gemini.</p>
+      <p><strong>الخصوصية:</strong> اسم الطالب يبقى على جهازه ولا يُرسل أبداً؛ تُرسل للنموذج أسئلة الدراسة فقط.</p>
+    </div>
+    <button onclick="hideAbout()" class="mt-5 w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700">إغلاق</button>
+  </div>
 </div>
-<button class="theme-toggle" onclick="toggleTheme()">🌗 المظهر</button>
-</header>
-<div class="container">
-<div class="chat-box" id="chatBox">
-<div class="msg ai-msg">أهلاً بك! نظام **Athar AI** مستعد لمعالجة طلبك الأكاديمي. اكتب استفسارك أو وحدتك الدراسية بالأسفل.</div>
-</div>
-<div class="input-dock">
-<input type="text" id="userInput" placeholder="اكتب سؤالك الأكاديمي هنا...">
-<button class="send-btn" onclick="handleSend()">تحليل ⚡</button>
-</div>
-</div>
-</div>
-
-<div class="screen" id="profileScreen">
-<header>
-<div class="header-title">السجل الأكاديمي</div>
-<button class="theme-toggle" onclick="toggleTheme()">🌗 المظهر</button>
-</header>
-<div class="container">
-<div class="onboarding-card" style="max-width:100%;text-align:right;">
-<h3 style="color:var(--accent);margin-bottom:1rem;">بيانات الجلسة الحالية:</h3>
-<p id="profileDetails" style="margin-bottom:1.5rem;line-height:1.8;color:var(--text-sub);"></p>
-<button class="btn-primary" onclick="logout()" style="background:#ef4444;">إعادة ضبط الحساب</button>
-</div>
-</div>
-</div>
-
-<nav class="bottom-nav" id="bottomNav" style="display:none;">
-<button class="nav-item active" onclick="switchTab('homeScreen',this)"><span>🏠</span>الرئيسية</button>
-<button class="nav-item" onclick="openTask('مستشار التلخيص');switchTab('chatScreen',this)"><span>📚</span>التلخيص</button>
-<button class="nav-item" onclick="openTask('مولد التقييمات');switchTab('chatScreen',this)"><span>🎯</span>التقييم</button>
-<button class="nav-item" onclick="switchTab('profileScreen',this)"><span>⚙️</span>حسابي</button>
-</nav>
 
 <script>
-let studentName = localStorage.getItem("athar_student_name") || "";
-let studentGrade = localStorage.getItem("athar_student_grade") || "";
-let currentTask = "مستكشف المفاهيم";
-
-const initApp = () => {
-  if (studentName) {
-    document.getElementById("onboardingScreen").classList.remove("active");
-    document.getElementById("homeScreen").classList.add("active");
-    document.getElementById("bottomNav").style.display = "flex";
-    document.getElementById("welcomeUserText").innerText = `مرحباً بك يا ${studentName} (${studentGrade})`;
-    document.getElementById("profileDetails").innerHTML = `<b>اسم الطالب:</b> ${studentName}<br><b>المرحلة:</b> ${studentGrade}<br><b>حالة النظام:</b> متصل بالوسيط البرمجي الآمن`;
-  }
+/* ═══════════════ الحالة العامة ═══════════════ */
+const state = {
+  user: null,          // {name, grade}
+  subject: '',
+  mode: 'explain',
+  controller: null,    // AbortController للطلب الجاري
+  quiz: null, qIndex: 0, score: 0,
 };
 
-const startApp = () => {
-  const name = document.getElementById("studentNameInput").value.trim();
-  const grade = document.getElementById("gradeInput").value;
-  
-  if (name === "") {
-    alert("يرجى تدوين اسم الطالب أولاً!");
-  } else {
-    localStorage.setItem("athar_student_name", name);
-    localStorage.setItem("athar_student_grade", grade);
-    studentName = name;
-    studentGrade = grade;
-    initApp();
-  }
+const SUBJECTS = [
+  { name: 'رياضيات',       emoji: '➗', cls: 'from-blue-500 to-cyan-400' },
+  { name: 'فيزياء',        emoji: '⚡', cls: 'from-violet-500 to-purple-400' },
+  { name: 'كيمياء',        emoji: '🧪', cls: 'from-emerald-500 to-teal-400' },
+  { name: 'أحياء',         emoji: '🧬', cls: 'from-green-500 to-lime-400' },
+  { name: 'لغة عربية',     emoji: '📖', cls: 'from-amber-500 to-orange-400' },
+  { name: 'لغة إنجليزية',  emoji: '🔤', cls: 'from-rose-500 to-pink-400' },
+  { name: 'تاريخ',         emoji: '🏛️', cls: 'from-yellow-600 to-amber-400' },
+  { name: 'جغرافيا',       emoji: '🌍', cls: 'from-sky-500 to-blue-400' },
+  { name: 'فلسفة',         emoji: '🤔', cls: 'from-indigo-500 to-violet-400' },
+  { name: 'علم النفس',     emoji: '🧠', cls: 'from-fuchsia-500 to-purple-400' },
+];
+const MODE_LABELS = { explain: '📖 شرح', summarize: '📝 تلخيص', quiz: '❓ اختبار', chat: '💬 سؤال حر' };
+
+/* ═══════════════ أدوات التخزين المحلي ═══════════════ */
+const store = {
+  get user()        { try { return JSON.parse(localStorage.getItem('athar_user')); } catch (e) { return null; } },
+  set user(v)       { localStorage.setItem('athar_user', JSON.stringify(v)); },
+  get history() {
+    const k = 'athar_history_' + (state.user ? state.user.name : '');
+    try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; }
+  },
+  set history(v) {
+    const k = 'athar_history_' + (state.user ? state.user.name : '');
+    localStorage.setItem(k, JSON.stringify(v.slice(0, 100))); // حد أقصى 100 عنصر
+  },
 };
 
-const switchTab = (screenId, btn) => {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-};
+/* ═══════════════ التنقل بين الشاشات ═══════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 'screen-history') renderHistory();
+}
 
-const openTask = (taskName) => {
-  currentTask = taskName;
-  document.getElementById("chatHeaderTitle").innerText = taskName;
-  switchTab('chatScreen');
-};
+/* ═══════════════ الدخول والخروج ═══════════════ */
+function login() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (name.length < 2) { alert('اكتب اسمك من فضلك'); return; }
+  const grade = document.getElementById('inp-grade').value;
+  state.user = { name, grade };
+  store.user = state.user;
+  enterHome();
+}
+function logout() {
+  state.user = null;
+  showScreen('screen-login');
+}
+function enterHome() {
+  document.getElementById('home-greeting').textContent = 'أهلاً ' + state.user.name + ' 👋';
+  document.getElementById('home-grade').textContent = state.user.grade;
+  showScreen('screen-home');
+}
 
-const toggleTheme = () => document.body.classList.toggle("light-mode");
-
-const appendMsg = (text, sender) => {
-  const chatBox = document.getElementById("chatBox");
-  chatBox.innerHTML += `<div class="msg ${sender === 1 ? 'user-msg' : 'ai-msg'}">${text}</div>`;
-  chatBox.scrollTop = chatBox.scrollHeight;
-};
-
-const handleSend = () => {
-  const input = document.getElementById("userInput");
-  const txt = input.value.trim();
-  if (txt !== "") {
-    appendMsg(txt, 1);
-    input.value = "";
-    callProxy(currentTask, txt);
-  }
-};
-
-const callProxy = async (task, query) => {
-  appendMsg("جاري تحليل البيانات عبر محرك Athar AI...", 2);
-  fetch('/api/ask', {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ subject: "عام", task, query, grade: studentGrade, statusName: studentName })
-  })
-  .then(r => r.json())
-  .then(d => {
-    document.getElementById("chatBox").lastChild.remove();
-    appendMsg(d.reply || d.error, 2);
-  })
-  .catch(() => {
-    document.getElementById("chatBox").lastChild.remove();
-    appendMsg("تعذر الاتصال بالخادم الوسيط.", 2);
+/* ═══════════════ شبكة المواد ═══════════════ */
+function buildSubjects() {
+  const grid = document.getElementById('subjects-grid');
+  grid.innerHTML = '';
+  SUBJECTS.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'subject-card bg-gradient-to-br ' + s.cls + ' text-white rounded-2xl p-5 text-center shadow-lg';
+    card.innerHTML = '<div class="text-3xl mb-1">' + s.emoji + '</div><div class="font-extrabold">' + escapeHtml(s.name) + '</div>';
+    card.onclick = () => openSubject(s.name);
+    grid.appendChild(card);
   });
-};
+}
+function openSubject(name) {
+  state.subject = name;
+  document.getElementById('assist-subject-title').textContent = name;
+  document.getElementById('result-area').classList.add('hidden');
+  showScreen('screen-assist');
+}
 
-const logout = () => {
-  localStorage.clear();
-  location.reload();
-};
+/* ═══════════════ تبويبات الأوضاع ═══════════════ */
+document.querySelectorAll('#mode-tabs .mode-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#mode-tabs .mode-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    const ph = {
+      explain:   'مثال: الجهاز التنفسي — أريد شرحاً كاملاً',
+      summarize: 'اكتب أو الصق نص الدرس الطويل هنا...',
+      quiz:      'مثال: قوانين نيوتن للحركة',
+      chat:      'اسأل أي سؤال عن ' + (state.subject || 'المنهاج') + '...',
+    };
+    document.getElementById('inp-text').placeholder = ph[state.mode];
+  });
+});
 
-initApp();
-</script>
-</body>
-</html>
+document.getElementById('inp-text').addEventListener('input', function () {
+  document.getElementById('char-count').textContent = this.value.length + ' / 8000';
+});
+
+/* ═══════════════ الاتصال بالوسيط الأمني ═══════════════ */
+async function apiCall(mode, text, isRetry) {
+  state.controller = new AbortController();
+  const timer = setTimeout(() => state.controller.abort(), 60000);
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode, subject: state.subject, grade: state.user.grade, text }),
+      signal: state.controller.signal,
+    });
+    const data = await res.json().catch(() => ({ ok: false, message: 'رد غير مفهوم من الخادم.' }));
+    if (!data.ok) {
+      // إعادة محاولة واحدة تلقائية عند الازدحام
+      if (res.status === 429 && !isRetry && data.retryAfter) {
+        const wait = Math.min(data.retryAfter, 45);
+        showLoader('⏳ الازدحام مرتفع — إعادة المحاولة خلال ' + wait + ' ثانية...');
+        await new Promise(r => setTimeout(r, wait * 1000));
+        if (!state.controller.signal.aborted) return apiCall(mode, text, true);
+      }
+      throw new Error(data.message || 'حدث خطأ غير متوقع.');
+    }
+    return data;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function cancelRequest() {
+  if (state.controller) state.controller.abort();
+  hideLoader();
+  setSendEnabled(true);
+}
+
+/* ═══════════════ الإرسال الرئيسي ═══════════════ */
+async function sendRequest() {
+  const text = document.getElementById('inp-text').value.trim();
+  if (text.length < 2) { alert('اكتب سؤالك أو نص الدرس أولاً'); return; }
+
+  setSendEnabled(false);
+  showLoader('⏳ يفكر أثر AI...');
+  document.getElementById('result-area').classList.add('hidden');
+
+  try {
+    const data = await apiCall(state.mode, text, false);
+
+    if (data.mode === 'quiz' && data.quiz) {
+      state.quiz = data.quiz.questions.slice(0, 8);
+      state.qIndex = 0;
+      state.score = 0;
+      saveEntry({ mode: 'quiz', subject: state.subject, title: text, reply: '', score: null });
+      hideLoader();
+      showScreen('screen-quiz');
+      renderQuestion();
+      return;
+    }
+
+    const html = richText(data.text || '');
+    document.getElementById('result-content').innerHTML = html;
+    document.getElementById('result-area').classList.remove('hidden');
+    saveEntry({ mode: state.mode, subject: state.subject, title: text, reply: data.text || '', score: null });
+    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      // الإلغاء يدوياً: لا شيء
+    } else {
+      alert('⚠️ ' + (err.message || 'تعذر الاتصال. تحقق من الإنترنت.'));
+    }
+  } finally {
+    hideLoader();
+    setSendEnabled(true);
+  }
+}
+
+function setSendEnabled(on) {
+  document.getElementById('btn-send').disabled = !on;
+}
+
+/* ═══════════════ منطق الاختبار التفاعلي ═══════════════ */
+function renderQuestion() {
+  const qs = state.quiz;
+  const q = qs[state.qIndex];
+  const letters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
+
+  document.getElementById('quiz-progress').textContent = 'سؤال ' + (state.qIndex + 1) + ' من ' + qs.length;
+  document.getElementById('quiz-score').textContent = 'النقاط: ' + state.score;
+  document.getElementById('quiz-bar').style.width = ((state.qIndex) / qs.length * 100) + '%';
+
+  const body = document.getElementById('quiz-body');
+  body.innerHTML = '';
+
+  const qEl = document.createElement('p');
+  qEl.className = 'font-extrabold text-lg mb-4';
+  qEl.textContent = q.question;
+  body.appendChild(qEl);
+
+  const opts = document.createElement('div');
+  opts.className = 'space-y-2';
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-option w-full text-right border-2 border-slate-200 rounded-xl px-4 py-3 bg-slate-50';
+    b.textContent = letters[i] + ') ' + opt;
+    b.onclick = () => answerQuestion(i, b);
+    opts.appendChild(b);
+  });
+  body.appendChild(opts);
+
+  const fb = document.createElement('div');
+  fb.id = 'quiz-feedback';
+  fb.className = 'hidden mt-4 p-3 rounded-xl text-sm';
+  body.appendChild(fb);
+
+  const next = document.createElement('button');
+  next.id = 'quiz-next';
+  next.className = 'hidden mt-4 w-full py-3 rounded-xl text-white font-extrabold bg-gradient-to-l from-indigo-600 to-teal-500';
+  next.onclick = nextQuestion;
+  body.appendChild(next);
+}
+
+function answerQuestion(choice, btnEl) {
+  const q = state.quiz[state.qIndex];
+  const buttons = document.querySelectorAll('#quiz-body .quiz-option');
+  buttons.forEach(b => { b.classList.add('locked'); b.disabled = true; });
+
+  const isRight = choice === q.correct;
+  buttons[q.correct].classList.add('correct');
+  if (!isRight) btnEl.classList.add('wrong');
+  if (isRight) state.score++;
+
+  const fb = document.getElementById('quiz-feedback');
+  fb.className = 'mt-4 p-3 rounded-xl text-sm ' + (isRight ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200');
+  fb.textContent = (isRight ? '✅ إجابة صحيحة! ' : '❌ الإجابة الصحيحة: ' + q.options[q.correct] + '. ') + (q.explanation || '');
+  fb.classList.remove('hidden');
+
+  const next = document.getElementById('quiz-next');
+  next.textContent = state.qIndex + 1 >= state.quiz.length ? '🏁 عرض النتيجة' : 'السؤال التالي ⬅';
+  next.classList.remove('hidden');
+
+  document.getElementById('quiz-score').textContent = 'النقاط: ' + state.score;
+}
+
+function nextQuestion() {
+  state.qIndex++;
+  if (state.qIndex >= state.quiz.length) { showQuizResult(); return; }
+  renderQuestion();
+}
+
+function showQuizResult() {
+  const total = state.quiz.length;
+  const pct = Math.round(state.score / total * 100);
+  const msg = pct >= 80 ? '🌟 ممتاز! أنت جاهز للامتحان' : pct >= 50 ? '👍 جيد، راجع الأخطاء وحاول مجدداً' : '📚 تحتاج مراجعة الدرس مرة أخرى';
+
+  // تحديث نتيجة آخر عنصر quiz في السجل
+  const h = store.history;
+  for (let i = h.length - 1; i >= 0; i--) {
+    if (h[i].mode === 'quiz' && h[i].score === null) { h[i].score = state.score + '/' + total; store.history = h; break; }
+  }
+
+  document.getElementById('quiz-progress').textContent = 'انتهى الاختبار';
+  document.getElementById('quiz-bar').style.width = '100%';
+  const body = document.getElementById('quiz-body');
+  body.innerHTML =
+    '<div class="text-center py-6">' +
+    '<div class="text-5xl mb-3">' + (pct >= 80 ? '🏆' : pct >= 50 ? '💪' : '📚') + '</div>' +
+    '<p class="text-3xl font-extrabold mb-1">' + state.score + ' / ' + total + '</p>' +
+    '<p class="text-slate-500 mb-1">' + pct + '%</p>' +
+    '<p class="font-bold text-indigo-700 mt-2">' + msg + '</p>' +
+    '<div class="flex 

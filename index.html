@@ -204,8 +204,9 @@ const openTask = (taskName) => {
 const toggleTheme = () => document.body.classList.toggle("light-mode");
 
 const appendMsg = (text, sender) => {
-  document.getElementById("chatBox").innerHTML += `<div class="msg ${sender === 1 ? 'user-msg' : 'ai-msg'}">${text}</div>`;
-  document.getElementById("chatBox").scrollTop = document.getElementById("chatBox"].scrollHeight;
+  const chatBox = document.getElementById("chatBox");
+  chatBox.innerHTML += `<div class="msg ${sender === 1 ? 'user-msg' : 'ai-msg'}">${text}</div>`;
+  chatBox.scrollTop = chatBox.scrollHeight;
 };
 
 const handleSend = () => {

@@ -3,26 +3,19 @@
  *   أثر AI — الوسيط الأمني (Secure Backend Proxy)
  *   api/ask.js — دالة Vercel Serverless
  * ═══════════════════════════════════════════════════════════
- * المهام الأمنية:
- *   1. إخفاء مفتاح Gemini API — لا يغادر الخادم أبداً
- *   2. تقييد المعدل لكل مستخدم (حماية الحصة المجانية لعدة طلاب)
- *   3. تعقيم المدخلات وبناء التعليمات في الخادم (منع حقن الأوامر)
- *   4. عدم إرسال أي بيانات شخصية للنموذج — النص فقط
- *   5. سلسلة نماذج احتياطية + رسائل خطأ عربية واضحة
  */
 
 const GEMINI_URL = (model, key) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
-// سلسلة الاحتياط: lite أوسع حصة مجانية أولاً
-const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+// النماذج الرسمية المستقرة والسريعة المتاحة عبر Gemini API
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 const MAX_TEXT = 8000;          // أقصى طول لنص الطالب
 const RATE_WINDOW_MS = 60 * 1000;
 const RATE_MAX = 10;            // طلبات/دقيقة لكل مستخدم
 const DAILY_MAX = 120;          // طلبات/يوم لكل مستخدم
 
-// تخزين لحظي داخل نسخة الدالة (كافٍ لعرض أكاديمي — انظر قسم الحدود في README)
 const minuteBuckets = new Map();
 const dailyBuckets = new Map();
 
@@ -47,7 +40,6 @@ function checkRate(ip) {
   const dCount = (dailyBuckets.get(dKey) || 0) + 1;
   dailyBuckets.set(dKey, dCount);
 
-  // تنظيف دوري ضد نمو الذاكرة
   if (minuteBuckets.size > 5000) minuteBuckets.clear();
   if (dailyBuckets.size > 10000) dailyBuckets.clear();
 
@@ -200,7 +192,6 @@ module.exports = async function handler(req, res) {
   }
   const b = body || {};
 
-  // التحقق من القيم المسموحة فقط — لا يمكن للعميل حقن تعليمات النظام
   const safeMode = MODES.includes(b.mode) ? b.mode : 'chat';
   const safeSubject = SUBJECTS.includes(b.subject) ? b.subject : '';
   const safeGrade = GRADES.includes(b.grade) ? b.grade : '';
@@ -221,13 +212,11 @@ module.exports = async function handler(req, res) {
         if (validQuiz(parsed)) {
           return res.status(200).json({ ok: true, mode: 'quiz', quiz: parsed });
         }
-        // فشل تحليل JSON: أعِد النص كنص عادي بدل فقدان الإجابة
         return res.status(200).json({ ok: true, mode: 'chat', text: r.text });
       }
       return res.status(200).json({ ok: true, mode: safeMode, text: r.text });
     }
     lastStatus = r.status;
-    if (r.status === 400) break; // خطأ في بنية الطلب لا يُحل بتبديل النموذج
   }
 
   const crowded = lastStatus === 429 || lastStatus === 503;
@@ -239,3 +228,4 @@ module.exports = async function handler(req, res) {
       : 'تعذر الاتصال بالخدمة حالياً. تحقق من الاتصال بالإنترنت ثم أعد المحاولة.',
   });
 };
+                   

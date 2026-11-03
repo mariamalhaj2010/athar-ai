@@ -15,7 +15,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-d
 #onboardingScreen{align-items:center;justify-content:center;padding:1.5rem}
 .onboarding-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:2.2rem 1.5rem;width:100%;max-width:420px;text-align:center;box-shadow:var(--shadow)}
 
-/* شعار المشروع الأكاديمي الفاخر المطابق للشعار المعتمد */
 .project-logo-badge{width:82px;height:82px;margin:0 auto 1.2rem;background:linear-gradient(135deg, #581c87, #7e22ce, #3b82f6);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 25px rgba(168,85,247,0.4), inset 0 2px 5px rgba(255,215,0,0.4);border:2px solid rgba(255,215,0,0.4);font-size:2.4rem;position:relative}
 .project-logo-badge::after{content:'🎓';position:absolute;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
 
@@ -60,7 +59,6 @@ nav.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--card);
 
 <div class="screen active" id="onboardingScreen">
 <div class="onboarding-card">
-<!-- الشعار المعتمد بتصميم ثلاثي الأبعاد فاخر يطابق الشعار الذهبي والبنفسجي -->
 <div class="project-logo-badge"></div>
 <h1 class="app-title">Athar AI</h1>
 <p class="app-subtitle">البوابة المعرفية المتقدمة لطلاب مرحلة الثانوية</p>
@@ -161,72 +159,87 @@ nav.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--card);
 </nav>
 
 <script>
-let studentName=localStorage.getItem("athar_student_name")||"";
-let studentGrade=localStorage.getItem("athar_student_grade")||"";
-let currentTask="مستكشف المفاهيم";
+let studentName = localStorage.getItem("athar_student_name") || "";
+let studentGrade = localStorage.getItem("athar_student_grade") || "";
+let currentTask = "مستكشف المفاهيم";
 
-const initApp=()=>(
-studentName?(
-document.getElementById("onboardingScreen").classList.remove("active"),
-document.getElementById("homeSchool")?.classList.add("active"),
-document.getElementById("homeScreen").classList.add("active"),
-document.getElementById("bottomNav").style.display="flex",
-document.getElementById("welcomeUserText").innerText=`مرحباً بك يا ${studentName} (${studentGrade})`,
-document.getElementById("profileDetails").innerHTML=`<b>اسم الطالب:</b> ${studentName}<br><b>المرحلة:</b> ${studentGrade}<br><b>حالة النظام:</b> متصل بالوسيط البرمجي الآمن`
-):null
-);
-
-const startApp=()=>{
-const name=document.getElementById("studentNameInput").value.trim();
-const grade=document.getElementById("gradeInput").value;
-name===""?alert("يرجى تدوين اسم الطالب أولاً!"):(
-localStorage.setItem("athar_student_name",name),
-localStorage.setItem("athar_student_grade",grade),
-studentName=name,studentGrade=grade,initApp()
-);
+const initApp = () => {
+  if (studentName) {
+    document.getElementById("onboardingScreen").classList.remove("active");
+    document.getElementById("homeScreen").classList.add("active");
+    document.getElementById("bottomNav").style.display = "flex";
+    document.getElementById("welcomeUserText").innerText = `مرحباً بك يا ${studentName} (${studentGrade})`;
+    document.getElementById("profileDetails").innerHTML = `<b>اسم الطالب:</b> ${studentName}<br><b>المرحلة:</b> ${studentGrade}<br><b>حالة النظام:</b> متصل بالوسيط البرمجي الآمن`;
+  }
 };
 
-const switchTab=(screenId,btn)=>(
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')),
-document.getElementById(screenId).classList.add('active'),
-document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')),
-btn?btn.classList.add('active'):null
-);
-
-const openTask=(taskName)=>(
-currentTask=taskName,
-document.getElementById("chatHeaderTitle").innerText=taskName,
-switchTab('chatScreen')
-);
-
-const toggleTheme=()=>document.body.classList.toggle("light-mode");
-
-const appendMsg=(text,sender)=>(
-document.getElementById("chatBox").innerHTML+=`<div class="msg ${sender===1?'user-msg':'ai-msg'}">${text}</div>`,
-document.getElementById("chatBox").scrollTop=document.getElementById("chatBox"].scrollHeight
-);
-
-const handleSend=()=>{
-const input=document.getElementById("userInput");
-const txt=input.value.trim();
-txt===""?null:(
-appendMsg(txt,1),input.value="",callProxy(currentTask,txt)
-);
+const startApp = () => {
+  const name = document.getElementById("studentNameInput").value.trim();
+  const grade = document.getElementById("gradeInput").value;
+  
+  if (name === "") {
+    alert("يرجى تدوين اسم الطالب أولاً!");
+  } else {
+    localStorage.setItem("athar_student_name", name);
+    localStorage.setItem("athar_student_grade", grade);
+    studentName = name;
+    studentGrade = grade;
+    initApp();
+  }
 };
 
-const callProxy=async(task,query)=>(
-appendMsg("جاري تحليل البيانات عبر محرك Athar AI...",2),
-fetch('/api/ask',{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({subject:"عام",task,query,grade:studentGrade,statusName:studentName})
-})
-.then(r=>r.json())
-.then(d=>(document.getElementById("chatBox").lastChild.remove(),appendMsg(d.reply||d.error,2)))
-.catch(()=>(document.getElementById("chatBox").lastChild.remove(),appendMsg("تعذر الاتصال بالخادم الوسيط.",2)))
-);
+const switchTab = (screenId, btn) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+};
 
-const logout=()=>(localStorage.clear(),location.reload());
+const openTask = (taskName) => {
+  currentTask = taskName;
+  document.getElementById("chatHeaderTitle").innerText = taskName;
+  switchTab('chatScreen');
+};
+
+const toggleTheme = () => document.body.classList.toggle("light-mode");
+
+const appendMsg = (text, sender) => {
+  document.getElementById("chatBox").innerHTML += `<div class="msg ${sender === 1 ? 'user-msg' : 'ai-msg'}">${text}</div>`;
+  document.getElementById("chatBox").scrollTop = document.getElementById("chatBox"].scrollHeight;
+};
+
+const handleSend = () => {
+  const input = document.getElementById("userInput");
+  const txt = input.value.trim();
+  if (txt !== "") {
+    appendMsg(txt, 1);
+    input.value = "";
+    callProxy(currentTask, txt);
+  }
+};
+
+const callProxy = async (task, query) => {
+  appendMsg("جاري تحليل البيانات عبر محرك Athar AI...", 2);
+  fetch('/api/ask', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subject: "عام", task, query, grade: studentGrade, statusName: studentName })
+  })
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("chatBox").lastChild.remove();
+    appendMsg(d.reply || d.error, 2);
+  })
+  .catch(() => {
+    document.getElementById("chatBox").lastChild.remove();
+    appendMsg("تعذر الاتصال بالخادم الوسيط.", 2);
+  });
+};
+
+const logout = () => {
+  localStorage.clear();
+  location.reload();
+};
 
 initApp();
 </script>

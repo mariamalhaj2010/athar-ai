@@ -1,118 +1,241 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "طريقة الطلب غير مسموحة"
-    });
+/**
+ * ═══════════════════════════════════════════════════════════
+ *   أثر AI — الوسيط الأمني (Secure Backend Proxy)
+ *   api/ask.js — دالة Vercel Serverless
+ * ═══════════════════════════════════════════════════════════
+ * المهام الأمنية:
+ *   1. إخفاء مفتاح Gemini API — لا يغادر الخادم أبداً
+ *   2. تقييد المعدل لكل مستخدم (حماية الحصة المجانية لعدة طلاب)
+ *   3. تعقيم المدخلات وبناء التعليمات في الخادم (منع حقن الأوامر)
+ *   4. عدم إرسال أي بيانات شخصية للنموذج — النص فقط
+ *   5. سلسلة نماذج احتياطية + رسائل خطأ عربية واضحة
+ */
+
+const GEMINI_URL = (model, key) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+// سلسلة الاحتياط: lite أوسع حصة مجانية أولاً
+const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
+const MAX_TEXT = 8000;          // أقصى طول لنص الطالب
+const RATE_WINDOW_MS = 60 * 1000;
+const RATE_MAX = 10;            // طلبات/دقيقة لكل مستخدم
+const DAILY_MAX = 120;          // طلبات/يوم لكل مستخدم
+
+// تخزين لحظي داخل نسخة الدالة (كافٍ لعرض أكاديمي — انظر قسم الحدود في README)
+const minuteBuckets = new Map();
+const dailyBuckets = new Map();
+
+function clientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  const ip = (typeof fwd === 'string' ? fwd.split(',')[0] : (req.socket && req.socket.remoteAddress)) || 'unknown';
+  return ip.trim();
+}
+
+function checkRate(ip) {
+  const now = Date.now();
+  const day = new Date().toISOString().slice(0, 10);
+
+  let m = minuteBuckets.get(ip);
+  if (!m || now > m.resetAt) {
+    m = { count: 0, resetAt: now + RATE_WINDOW_MS };
+    minuteBuckets.set(ip, m);
   }
+  m.count += 1;
 
-  const {
-    subject = "عام",
-    task = "مستكشف المفاهيم",
-    query,
-    grade = "المرحلة الثانوية",
-    studentName,
-    statusName
-  } = req.body || {};
+  const dKey = ip + '|' + day;
+  const dCount = (dailyBuckets.get(dKey) || 0) + 1;
+  dailyBuckets.set(dKey, dCount);
 
-  const name = studentName || statusName || "الطالب";
-  const apiKey = process.env.GEMINI_API_KEY;
+  // تنظيف دوري ضد نمو الذاكرة
+  if (minuteBuckets.size > 5000) minuteBuckets.clear();
+  if (dailyBuckets.size > 10000) dailyBuckets.clear();
 
-  if (!apiKey) {
-    return res.status(500).json({
-      error: "مفتاح Gemini غير موجود في إعدادات Vercel"
-    });
+  if (m.count > RATE_MAX) {
+    return { ok: false, retryAfter: Math.max(1, Math.ceil((m.resetAt - now) / 1000)) };
   }
-
-  if (!query || !query.trim()) {
-    return res.status(400).json({
-      error: "يرجى كتابة السؤال أولاً"
-    });
+  if (dCount > DAILY_MAX) {
+    return { ok: false, retryAfter: 3600 };
   }
+  return { ok: true };
+}
 
-  const systemPrompt = `
-أنت Athar AI (أثر)، معلم أكاديمي متخصص.
-تساعد طلاب الثانوية العامة في الصف: ${grade}.
-اسم الطالب: ${name}.
-المادة: ${subject}.
-المهمة الحالية: ${task}.
+const SUBJECTS = ['رياضيات', 'فيزياء', 'كيمياء', 'أحياء', 'لغة عربية', 'لغة إنجليزية', 'تاريخ', 'جغرافيا', 'فلسفة', 'علم النفس'];
+const GRADES = ['الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي'];
+const MODES = ['explain', 'summarize', 'quiz', 'chat'];
 
-قواعدك:
-1. اشرح باللغة العربية الواضحة.
-2. ابدأ من الأساسيات ثم انتقل للتفاصيل.
-3. استخدم أمثلة تعليمية.
-4. عند التلخيص نظم المعلومات في نقاط.
-5. عند حل المسائل اكتب القانون ثم خطوات الحل.
-6. لا تخترع معلومات من المنهاج.
-7. إذا كانت معلومات المنهاج غير متوفرة اطلب من الطالب إرسال النص أو صورة الدرس.
-8. ناقش الطالب وصحح أخطاءه بلطف ودقة.
-`;
+const SYSTEM_BASE = [
+  'أنت «أثر AI»، مساعد تعليمي متخصص في مساعدة طلاب المرحلة الثانوية العرب.',
+  'قواعدك: العربية الفصحى المبسطة، تنظيم الإجابة بعناوين ونقاط، أمثلة تطبيقية من الحياة اليومية،',
+  'تشجيع الطالب دائماً، وعدم الخوض في مواضيع خارج النطاق الأكاديمي إلا إيجازاً ثم التوجيه للدراسة.',
+].join(' ');
 
-  try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: systemPrompt }]
-          },
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: query }]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4096
-          }
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Gemini API Error:", data);
-
-      return res.status(502).json({
-        error:
-          data.error?.message ||
-          `خطأ من Gemini: ${response.status}`
-      });
-    }
-
-    const parts = data.candidates?.[0]?.content?.parts || [];
-
-    const reply = parts
-      .filter(part => typeof part.text === "string")
-      .map(part => part.text)
-      .join("\n")
-      .trim();
-
-    if (!reply) {
-      console.error("Empty Gemini response:", data);
-
-      return res.status(502).json({
-        error: data.promptFeedback?.blockReason
-          ? `تم رفض الطلب: ${data.promptFeedback.blockReason}`
-          : `لم تصل إجابة نصية من Gemini. السبب: ${
-              data.candidates?.[0]?.finishReason || "غير معروف"
-            }`
-      });
-    }
-
-    return res.status(200).json({ reply });
-
-  } catch (err) {
-    console.error("Server Error:", err);
-
-    return res.status(500).json({
-      error: "خطأ في الاتصال بخادم الذكاء الاصطناعي: " + err.message
-    });
+function buildPrompt(mode, subject, grade, text) {
+  const ctx = `المادة: ${subject || 'عام'}. الصف الدراسي: ${grade || 'ثانوي'}.`;
+  switch (mode) {
+    case 'explain':
+      return {
+        system: SYSTEM_BASE,
+        user: `${ctx}\nاشرح للطالب موضوع «${text}» شرحاً مفصلاً ومنظماً: عناوين رئيسية وفرعية، نقاط واضحة، ومثال تطبيقي في النهاية.`,
+        json: false,
+      };
+    case 'summarize':
+      return {
+        system: SYSTEM_BASE,
+        user: `${ctx}\nلخّص «${text}» في نقاط مركزة سهلة الحفظ للمذاكرة السريعة، ثم اختم بأهم المصطلحات وأوزانها في الامتحان.`,
+        json: false,
+      };
+    case 'quiz':
+      return {
+        system: SYSTEM_BASE + ' عند وضع الاختبار، أخرج JSON صرفاً فقط دون أي نص خارج الهيكل.',
+        user: `${ctx}\nأنشئ 5 أسئلة اختيار من متعدد متنوعة في الصعوبة عن «${text}» بمستوى يناسب الصف الدراسي.\n` +
+          'أخرج JSON بالصيغة التالية حصراً:\n' +
+          '{"questions":[{"question":"نص السؤال","options":["أ","ب","ج","د"],"correct":0,"explanation":"سبب الإجابة الصحيحة"}]}\n' +
+          'حيث correct هو رقم الخيار الصحيح من 0 إلى 3.',
+        json: true,
+      };
+    default:
+      return { system: SYSTEM_BASE, user: `${ctx}\nسؤال الطالب: ${text}`, json: false };
   }
 }
+
+function clean(text) {
+  return String(text || '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ' ')
+    .trim()
+    .slice(0, MAX_TEXT);
+}
+
+async function callGemini(model, apiKey, system, user) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45000);
+  try {
+    const res = await fetch(GEMINI_URL(model, apiKey), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: 'user', parts: [{ text: user }] }],
+        generationConfig: { temperature: 0.6, maxOutputTokens: 2048 },
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) return { ok: false, status: res.status };
+    const data = await res.json();
+    const text = ((data.candidates && data.candidates[0] && data.candidates[0].content &&
+      data.candidates[0].content.parts) || [])
+      .map((p) => p.text || '')
+      .join('')
+      .trim();
+    if (!text) return { ok: false, status: 502 };
+    return { ok: true, text };
+  } catch (e) {
+    return { ok: false, status: e.name === 'AbortError' ? 504 : 500 };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function validQuiz(parsed) {
+  if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) return false;
+  return parsed.questions.every((q) =>
+    q &&
+    typeof q.question === 'string' && q.question.length > 3 &&
+    Array.isArray(q.options) && q.options.length >= 2 &&
+    Number.isInteger(q.correct) && q.correct >= 0 && q.correct < q.options.length
+  );
+}
+
+function extractJson(raw) {
+  const cleaned = raw.replace(/```(?:json)?/gi, '').trim();
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  try {
+    return JSON.parse(cleaned.slice(start, end + 1));
+  } catch (e) {
+    return null;
+  }
+}
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+  const origin = req.headers.origin;
+  const allowedOrigin =
+    origin && (origin.endsWith('.vercel.app') || /localhost:\d+$/.test(origin)) ? origin : null;
+  if (allowedOrigin) res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Vary', 'Origin');
+
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, message: 'طريقة الطلب غير مدعومة.' });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({
+      ok: false,
+      message: 'لم يُضبط مفتاح Gemini في الخادم بعد. أضف GEMINI_API_KEY في إعدادات Environment بمنصة Vercel.',
+    });
+  }
+
+  const ip = clientIp(req);
+  const rate = checkRate(ip);
+  if (!rate.ok) {
+    return res.status(429).json({
+      ok: false,
+      retryAfter: rate.retryAfter,
+      message: 'أُرسلت طلبات كثيرة خلال فترة قصيرة. انتظر لحظات ثم أعد المحاولة.',
+    });
+  }
+
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch (e) { body = {}; }
+  }
+  const b = body || {};
+
+  // التحقق من القيم المسموحة فقط — لا يمكن للعميل حقن تعليمات النظام
+  const safeMode = MODES.includes(b.mode) ? b.mode : 'chat';
+  const safeSubject = SUBJECTS.includes(b.subject) ? b.subject : '';
+  const safeGrade = GRADES.includes(b.grade) ? b.grade : '';
+  const safeText = clean(b.text);
+
+  if (!safeText || safeText.length < 2) {
+    return res.status(400).json({ ok: false, message: 'اكتب سؤالك أو نص الدرس أولاً.' });
+  }
+
+  const prompt = buildPrompt(safeMode, safeSubject, safeGrade, safeText);
+
+  let lastStatus = 500;
+  for (const model of MODELS) {
+    const r = await callGemini(model, apiKey, prompt.system, prompt.user);
+    if (r.ok) {
+      if (prompt.json) {
+        const parsed = extractJson(r.text);
+        if (validQuiz(parsed)) {
+          return res.status(200).json({ ok: true, mode: 'quiz', quiz: parsed });
+        }
+        // فشل تحليل JSON: أعِد النص كنص عادي بدل فقدان الإجابة
+        return res.status(200).json({ ok: true, mode: 'chat', text: r.text });
+      }
+      return res.status(200).json({ ok: true, mode: safeMode, text: r.text });
+    }
+    lastStatus = r.status;
+    if (r.status === 400) break; // خطأ في بنية الطلب لا يُحل بتبديل النموذج
+  }
+
+  const crowded = lastStatus === 429 || lastStatus === 503;
+  return res.status(crowded ? 429 : 502).json({
+    ok: false,
+    retryAfter: crowded ? 30 : undefined,
+    message: crowded
+      ? 'الخدمة مزدحمة حالياً (تجاوز الحصة المجانية مؤقتاً). انتظر نحو دقيقة ثم أعد المحاولة.'
+      : 'تعذر الاتصال بالخدمة حالياً. تحقق من الاتصال بالإنترنت ثم أعد المحاولة.',
+  });
+};

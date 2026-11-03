@@ -432,4 +432,74 @@ function showQuizResult() {
     '<p class="text-3xl font-extrabold mb-1">' + state.score + ' / ' + total + '</p>' +
     '<p class="text-slate-500 mb-1">' + pct + '%</p>' +
     '<p class="font-bold text-indigo-700 mt-2">' + msg + '</p>' +
-    '<div class="flex 
+    '<div class="flex gap-3 mt-6">' +
+    '<button onclick="openSubject(state.subject)" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold hover:bg-slate-200">🔄 اختبار جديد</button>' +
+    '<button onclick="showScreen(\'screen-home\')" class="flex-1 py-3 rounded-xl text-white font-extrabold bg-gradient-to-l from-indigo-600 to-teal-500">🏠 الرئيسية</button>' +
+    '</div></div>';
+}
+
+/* ═══════════════ السجل ═══════════════ */
+function saveEntry(entry) {
+  const h = store.history;
+  h.unshift({ ...entry, time: new Date().toLocaleString('ar-SA') });
+  store.history = h;
+}
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const h = store.history;
+  if (h.length === 0) {
+    list.innerHTML = '<div class="text-center py-10 text-slate-400">سجل المذاكرة فارغ بعد</div>';
+    return;
+  }
+  list.innerHTML = h.map(item => `
+    <div class="bg-white rounded-2xl p-4 shadow">
+      <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+        <span class="font-bold text-indigo-600">${escapeHtml(item.subject)} (${MODE_LABELS[item.mode] || item.mode})</span>
+        <span>${item.time}</span>
+      </div>
+      <p class="font-bold text-sm mb-2 text-slate-700">${escapeHtml(item.title)}</p>
+      ${item.reply ? `<div class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl line-clamp-3">${escapeHtml(item.reply)}</div>` : ''}
+      ${item.score ? `<div class="text-xs font-bold text-emerald-600 mt-1">النتيجة: ${item.score}</div>` : ''}
+    </div>
+  `).join('');
+}
+function clearHistory() {
+  if (confirm('هل أنت متأكد من مسح السجل؟')) {
+    store.history = [];
+    renderHistory();
+  }
+}
+
+/* ═══════════════ أدوات مساعدة ═══════════════ */
+function richText(md) {
+  return md
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.*$)/gm, '<h3 class="text-lg font-bold text-indigo-900 mt-4 mb-2">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-xl font-extrabold text-indigo-900 mt-5 mb-3">$1</h2>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-700">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^- (.*$)/gm, '<li class="mr-4 list-disc">$1</li>')
+    .replace(/\n/g, '<br>');
+}
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function showAbout() { document.getElementById('about-modal').classList.remove('hidden'); }
+function hideAbout() { document.getElementById('about-modal').classList.add('hidden'); }
+function showLoader(msg) {
+  document.getElementById('loader-msg').textContent = msg;
+  document.getElementById('loader').classList.remove('hidden');
+}
+function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
+
+// التهيئة الأولية عند التحميل
+if (store.user) {
+  state.user = store.user;
+  enterHome();
+} else {
+  showScreen('screen-login');
+}
+buildSubjects();
+</script>
+</body>
+</html>
